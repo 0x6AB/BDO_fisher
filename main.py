@@ -67,6 +67,12 @@ def load_database_from_dir(dir):
     return loaded_data
 
 
+"""
+Две функи ниже писались давно, что там происходит я и сам не помню, в ближайшее время постараюсь переписать нормально.
+Основаная задача медианная фильтрация данных (с особенностями)
+"""
+
+
 def merging_indicators2(img, imgs_tpl, result, iters):
     kof1 = 0.9
     kof2 = 0.7  # 0.6
@@ -86,7 +92,7 @@ def merging_indicators2(img, imgs_tpl, result, iters):
                     flag = False
 
             if flag:
-                print("add2", new_data)
+                # print("add2", new_data)
                 result.append([1, new_data])
                 return merging_indicators2(img, imgs_tpl, result, i)
     return result
@@ -115,7 +121,7 @@ def merging_indicators(img, imgs_tpl):
                     flag = False
 
             if flag:
-                print("add", new_data)
+                # print("add", new_data)
                 result.append([1, new_data])
                 return merging_indicators2(img, imgs_tpl, result, i)
 
@@ -125,7 +131,6 @@ def merging_indicators(img, imgs_tpl):
 def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d, loot_click):
     # monitor = {"top": 340, "left": 763, "width": 385, "height": 84}
     start_time = time.time()
-    #print("start analis_awsd_multiple_sampling")
     img = None
     try:
         img = np.array(mss.mss().grab(global_monitor))
@@ -133,7 +138,7 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     except:
         print("Restart!!!!")
         sys.exit(0)
-    cv2.imwrite("test.png", img)
+    # cv2.imwrite("test.png", img)
 
     a = merging_indicators(img, imgs_tpl_a)
     w = merging_indicators(img, imgs_tpl_w)
@@ -143,7 +148,7 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     all = []
 
     # "Статичтический фильтр" - пережиток прошлого когда бдо использовало зашумление
-    # сейчас скорей всего не особо нужен, но был оставлен, на точность все равно не влияет
+    # сейчас скорей всего не особо нужен, но был оставлен, повышает точность
     # Раньше еще использовалось помимо использования нескольких патернов семплирование на протяжении какого то времени.
     for aa in a:
         if aa[0] >= 2:
@@ -173,7 +178,6 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
         time.sleep(4)
         monitor = {"top": 10, "left": 10, "width": 1900, "height": 1060}
         img = np.array(mss.mss().grab(monitor))
-        cv2.imwrite("test2.png", img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         coord = find_templ(img, loot_click, 0.7, 0.71)
         if len(coord) != 0:
@@ -224,7 +228,7 @@ def main():
             keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
-            time.sleep(0.5)
+            time.sleep(0.5) # TODO: Еще под вопросом!!!
             try:
                 # monitor = {"top": 20, "left": 763, "width": 385, "height": 84}
                 img = np.array(mss.mss().grab(global_monitor))
