@@ -11,8 +11,9 @@ import os
 from multiprocessing import Process
 from CustomKeyboard import *
 
-COMPORT = "COM17"
-
+# 349f482e04b7bc460e6c060e169cec617c9397cc
+COMPORT = "COM6"
+ASESS_KEY = 3232
 """
 TODO: добавить выбор COM порта при запуске
 TODO: добавить сохранение COM порта при запуске
@@ -153,7 +154,7 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     # Сортировка по координате x
     all.sort(key=lambda x: (int(x[1][0])))
 
-    keyboard = CustomKeyboard(COMPORT)
+    keyboard = CustomKeyboard(COMPORT, key=ASESS_KEY)
     for i in all:
         keyboard.emulated_click(i[0])
         print(i[0])
@@ -163,9 +164,10 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
         time.sleep(4)
         monitor = {"top": 10, "left": 10, "width": 1900, "height": 1060}
         img = np.array(mss.mss().grab(monitor))
+        cv2.imwrite("test2.png", img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         coord = find_templ(img, loot_click, 0.7, 0.71)
-        if len(coord)!=0:
+        if len(coord) != 0:
             keyboard.emulated_click("r")
             print("looted!!!")
     except:
@@ -199,7 +201,7 @@ def main():
         coord = find_templ(img, img_tpl_m_first, 0.9, 0.71)
         if len(coord) != 0:
             print("press space (first mini game)")
-            keyboard = CustomKeyboard(COMPORT)
+            keyboard = CustomKeyboard(COMPORT, key=ASESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
             # Ожидаем пока пропадет полоска первой мини игры
@@ -209,7 +211,7 @@ def main():
         coord = find_templ(img, img_tpl_space, 0.7, 0.71)
         if len(coord) != 0:
             print("Press space")
-            keyboard = CustomKeyboard(COMPORT)
+            keyboard = CustomKeyboard(COMPORT, key=ASESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
             try:
