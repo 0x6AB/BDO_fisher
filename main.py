@@ -14,6 +14,8 @@ from CustomKeyboard import *
 # 349f482e04b7bc460e6c060e169cec617c9397cc
 COMPORT = "COM6"
 ACCESS_KEY = 1234
+global_monitor = {"top": 0, "left": 500, "width": 900, "height": 1080}
+
 """
 TODO: добавить выбор COM порта при запуске
 TODO: добавить сохранение COM порта при запуске
@@ -22,6 +24,7 @@ TODO: При каждой рекурсии, ставить aa[0] (количес
 TODO: фильтры по X и Y (ищем медианное значение и при сильных отличиях - убираем)
 TODO: добавить фильтр рыбы
 TODO: добавить смену удочек
+TODO: уменьшить время сбора семплов для статистического фильтра
 """
 
 
@@ -71,6 +74,7 @@ def merging_indicators2(img, imgs_tpl, result, iters):
         new_datas = find_templ(img, imgs_tpl[i], kof1, kof2)
         # Ориентируемся на координаты x,y
         # Отличие плюс, минус 5
+        # Медианный фильтр по координатам
         for new_data in new_datas:
             # x = new_data[0], y = new_data[1]
             flag = True
@@ -82,7 +86,7 @@ def merging_indicators2(img, imgs_tpl, result, iters):
                     flag = False
 
             if flag:
-                print("add", new_data)
+                print("add2", new_data)
                 result.append([1, new_data])
                 return merging_indicators2(img, imgs_tpl, result, i)
     return result
@@ -119,10 +123,12 @@ def merging_indicators(img, imgs_tpl):
 
 
 def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d, loot_click):
-    monitor = {"top": 340, "left": 763, "width": 385, "height": 84}
+    # monitor = {"top": 340, "left": 763, "width": 385, "height": 84}
+    start_time = time.time()
+    #print("start analis_awsd_multiple_sampling")
     img = None
     try:
-        img = np.array(mss.mss().grab(monitor))
+        img = np.array(mss.mss().grab(global_monitor))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     except:
         print("Restart!!!!")
@@ -138,6 +144,7 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
 
     # "Статичтический фильтр" - пережиток прошлого когда бдо использовало зашумление
     # сейчас скорей всего не особо нужен, но был оставлен, на точность все равно не влияет
+    # Раньше еще использовалось помимо использования нескольких патернов семплирование на протяжении какого то времени.
     for aa in a:
         if aa[0] >= 2:
             all.append(("a", aa[1]))
@@ -153,6 +160,8 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
 
     # Сортировка по координате x
     all.sort(key=lambda x: (int(x[1][0])))
+
+    print("analis_awsd_multiple_sampling %s seconds" % (time.time() - start_time))
 
     keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
     for i in all:
@@ -188,11 +197,11 @@ def main():
     img_tpl_2space_bypass = cv2.imread("data/2space_bypass.png", cv2.IMREAD_GRAYSCALE)
     loot_click = cv2.imread("data/loot_click.png", cv2.IMREAD_GRAYSCALE)
     while True:
-        time.sleep(0.1)
-        monitor = {"top": 320, "left": 763, "width": 385, "height": 84}
+        time.sleep(0.01)
+        # monitor = {"top": 320, "left": 763, "width": 385, "height": 84}
         img = None
         try:
-            img = np.array(mss.mss().grab(monitor))
+            img = np.array(mss.mss().grab(global_monitor))
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         except:
             print("Restart!!!!")
@@ -205,7 +214,8 @@ def main():
             keyboard.emulated_click(" ")
             del keyboard
             # Ожидаем пока пропадет полоска первой мини игры
-            time.sleep(4)
+            sleep_time = random.uniform(2.5, 3.0)
+            time.sleep(sleep_time)
             analis_awsd_multiple_sampling(a_db, w_db, s_db, d_db, loot_click)
 
         coord = find_templ(img, img_tpl_space, 0.7, 0.71)
@@ -214,9 +224,10 @@ def main():
             keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
+            time.sleep(0.5)
             try:
-                monitor = {"top": 20, "left": 763, "width": 385, "height": 84}
-                img = np.array(mss.mss().grab(monitor))
+                # monitor = {"top": 20, "left": 763, "width": 385, "height": 84}
+                img = np.array(mss.mss().grab(global_monitor))
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 coord = find_templ(img, img_tpl_2space_bypass, 0.7, 0.71)
                 if len(coord) != 0:
