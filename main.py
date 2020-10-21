@@ -13,7 +13,7 @@ from CustomKeyboard import *
 
 # 349f482e04b7bc460e6c060e169cec617c9397cc
 COMPORT = "COM6"
-ASESS_KEY = 3232
+ACCESS_KEY = 1234
 """
 TODO: добавить выбор COM порта при запуске
 TODO: добавить сохранение COM порта при запуске
@@ -154,7 +154,7 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     # Сортировка по координате x
     all.sort(key=lambda x: (int(x[1][0])))
 
-    keyboard = CustomKeyboard(COMPORT, key=ASESS_KEY)
+    keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
     for i in all:
         keyboard.emulated_click(i[0])
         print(i[0])
@@ -201,7 +201,7 @@ def main():
         coord = find_templ(img, img_tpl_m_first, 0.9, 0.71)
         if len(coord) != 0:
             print("press space (first mini game)")
-            keyboard = CustomKeyboard(COMPORT, key=ASESS_KEY)
+            keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
             # Ожидаем пока пропадет полоска первой мини игры
@@ -211,7 +211,7 @@ def main():
         coord = find_templ(img, img_tpl_space, 0.7, 0.71)
         if len(coord) != 0:
             print("Press space")
-            keyboard = CustomKeyboard(COMPORT, key=ASESS_KEY)
+            keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
             try:
