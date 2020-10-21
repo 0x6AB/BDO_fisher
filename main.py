@@ -228,7 +228,7 @@ def main():
             keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
-            time.sleep(0.5) # TODO: Еще под вопросом!!!
+            time.sleep(0.5)
             try:
                 # monitor = {"top": 20, "left": 763, "width": 385, "height": 84}
                 img = np.array(mss.mss().grab(global_monitor))
