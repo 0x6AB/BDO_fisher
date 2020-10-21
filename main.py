@@ -11,7 +11,7 @@ import os
 from multiprocessing import Process
 from CustomKeyboard import *
 
-# 349f482e04b7bc460e6c060e169cec617c9397cc
+#
 COMPORT = "COM6"
 ACCESS_KEY = 1234
 global_monitor = {"top": 0, "left": 500, "width": 900, "height": 1080}
