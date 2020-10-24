@@ -8,23 +8,19 @@ from scipy.ndimage import maximum_filter
 import mss
 import time
 import os
-from multiprocessing import Process
+from multiprocessing import Process, freeze_support
 from CustomKeyboard import *
+import argparse
 
-#
-COMPORT = "COM6"
-ACCESS_KEY = 1234
 global_monitor = {"top": 0, "left": 500, "width": 900, "height": 1080}
 
 """
-TODO: добавить выбор COM порта при запуске
 TODO: добавить сохранение COM порта при запуске
-TODO: пофиксить проблему очень темных крассных цветов
+TODO: пофиксить проблему очень темных крассных цветов (по идее достаточно собрать семпл,
+                                                или прийдётся менять один с каналов перед преобразованием)
 TODO: При каждой рекурсии, ставить aa[0] (количество гудов) в 1 
-TODO: фильтры по X и Y (ищем медианное значение и при сильных отличиях - убираем)
 TODO: добавить фильтр рыбы
 TODO: добавить смену удочек
-TODO: уменьшить время сбора семплов для статистического фильтра
 """
 
 
@@ -190,7 +186,13 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     del keyboard
 
 
-def main():
+def main(local_comport, local_ACCESS_KEY):
+
+    global COMPORT
+    COMPORT = local_comport
+    global ACCESS_KEY
+    ACCESS_KEY = local_ACCESS_KEY
+
     time.sleep(3)
     img_tpl_space = cv2.imread("data/patern_space.png", cv2.IMREAD_GRAYSCALE)
     img_tpl_m_first = cv2.imread("data/first_mini_game.png", cv2.IMREAD_GRAYSCALE)
@@ -244,8 +246,17 @@ def main():
 
 
 if __name__ == "__main__":
+    # Для работы модуля multiprocessing с pyinstaller
+    freeze_support()
+
+    parser = argparse.ArgumentParser(description='Black desert fishing bot')
+
+    parser.add_argument('--port', action="store", dest="port", required=True)
+    parser.add_argument('--key', action="store", dest="key", default=1234, type=int)
+    args = parser.parse_args()
+
     while True:
-        p = Process(target=main)
+        p = Process(target=main, args=(args.port, args.key))
         print("started new process")
         p.start()
         p.join()
