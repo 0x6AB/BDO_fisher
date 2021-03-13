@@ -186,7 +186,7 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     del keyboard
 
 
-def main(local_comport, local_ACCESS_KEY):
+def main(local_comport, local_ACCESS_KEY, local_region):
 
     global COMPORT
     COMPORT = local_comport
@@ -200,8 +200,15 @@ def main(local_comport, local_ACCESS_KEY):
     w_db = load_database_from_dir("data/w")
     s_db = load_database_from_dir("data/s")
     d_db = load_database_from_dir("data/d")
-    img_tpl_2space_bypass = cv2.imread("data/2space_bypass.png", cv2.IMREAD_GRAYSCALE)
-    loot_click = cv2.imread("data/loot_click.png", cv2.IMREAD_GRAYSCALE)
+    if local_region == "RU":
+        img_tpl_2space_bypass = cv2.imread("data/2space_bypass_RU.png", cv2.IMREAD_GRAYSCALE)
+        loot_click = cv2.imread("data/loot_click_RU.png", cv2.IMREAD_GRAYSCALE)
+    elif local_region == "EU":
+        img_tpl_2space_bypass = cv2.imread("data/2space_bypass_EU.png", cv2.IMREAD_GRAYSCALE)
+        loot_click = cv2.imread("data/loot_click_EU.png", cv2.IMREAD_GRAYSCALE)
+    else:
+        print("Error selected region")
+        sys.exit(-1)
     while True:
         time.sleep(0.01)
         # monitor = {"top": 320, "left": 763, "width": 385, "height": 84}
@@ -253,10 +260,11 @@ if __name__ == "__main__":
 
     parser.add_argument('--port', action="store", dest="port", required=True)
     parser.add_argument('--key', action="store", dest="key", default=1234, type=int)
+    parser.add_argument('--region', action="store", dest="region", default="RU", type=str)
     args = parser.parse_args()
     #qhd
     while True:
-        p = Process(target=main, args=(args.port, args.key))
+        p = Process(target=main, args=(args.port, args.key, args.region))
         print("started new process")
         p.start()
         p.join()
