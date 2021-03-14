@@ -1,6 +1,5 @@
 #!python
 # -*- coding: utf-8 -*-
-
 import sys
 import numpy as np
 import cv2
@@ -15,6 +14,8 @@ import argparse
 global_monitor = {"top": 0, "left": 500, "width": 900, "height": 1080}
 
 """
+TODO: разработать систему конфигов
+TODO: добавить конфиги под 1440p, 720p
 TODO: добавить сохранение COM порта при запуске
 TODO: пофиксить проблему очень темных крассных цветов (по идее достаточно собрать семпл,
                                                 или прийдётся менять один с каналов перед преобразованием)
@@ -125,7 +126,6 @@ def merging_indicators(img, imgs_tpl):
 
 
 def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d, loot_click):
-    # monitor = {"top": 340, "left": 763, "width": 385, "height": 84}
     start_time = time.time()
     img = None
     try:
@@ -145,7 +145,8 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
 
     # "Статичтический фильтр" - пережиток прошлого когда бдо использовало зашумление
     # сейчас скорей всего не особо нужен, но был оставлен, повышает точность
-    # Раньше еще использовалось помимо использования нескольких патернов семплирование на протяжении какого то времени.
+    # Раньше еще использовалось, помимо использования нескольких патернов,
+    # семплирование на протяжении какого то времени.
     for aa in a:
         if aa[0] >= 2:
             all.append(("a", aa[1]))
@@ -211,7 +212,6 @@ def main(local_comport, local_ACCESS_KEY, local_region):
         sys.exit(-1)
     while True:
         time.sleep(0.01)
-        # monitor = {"top": 320, "left": 763, "width": 385, "height": 84}
         img = None
         try:
             img = np.array(mss.mss().grab(global_monitor))
@@ -239,7 +239,6 @@ def main(local_comport, local_ACCESS_KEY, local_region):
             del keyboard
             time.sleep(0.5)
             try:
-                # monitor = {"top": 20, "left": 763, "width": 385, "height": 84}
                 img = np.array(mss.mss().grab(global_monitor))
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 coord = find_templ(img, img_tpl_2space_bypass, 0.7, 0.71)
@@ -258,11 +257,23 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Black desert fishing bot')
 
-    parser.add_argument('--port', action="store", dest="port", required=True)
+    parser.add_argument('--port', action="store", dest="port", default=None, type=str)
     parser.add_argument('--key', action="store", dest="key", default=1234, type=int)
     parser.add_argument('--region', action="store", dest="region", default="RU", type=str)
     args = parser.parse_args()
-    #qhd
+    if not args.port:
+        i = 0
+        ports = serial_ports()
+        for port in ports:
+            i += 1
+            print("%d) %s" % (i, port))
+        print("Please select COM port (1-%d): " % i, end="")
+        num = int(input())
+        try:
+            args.port = ports[num-1]
+        except:
+            print("Error select port")
+            sys.exit(-1)
     while True:
         p = Process(target=main, args=(args.port, args.key, args.region))
         print("started new process")
