@@ -12,7 +12,8 @@ from CustomKeyboard import *
 import argparse
 import json
 
-global_monitor = {"top": 0, "left": 500, "width": 900, "height": 1080}
+global_monitor = None
+full_monitor = None
 
 """
 TODO: разработать систему конфигов
@@ -174,7 +175,7 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
 
     try:
         time.sleep(4)
-        monitor = {"top": 10, "left": 10, "width": 1900, "height": 1060}
+        monitor = full_monitor # {"top": 10, "left": 10, "width": 1900, "height": 1060}
         img = np.array(mss.mss().grab(monitor))
         # cv2.imwrite("test.png", img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -197,8 +198,10 @@ def main(local_comport, local_ACCESS_KEY, local_config):
     ACCESS_KEY = local_ACCESS_KEY
 
     config = json.loads(open(local_config).read())
-    # global global_monitor
-    # global_monitor = config["monitor_global"]
+    global global_monitor
+    global_monitor = config["monitor_global"]
+    global full_monitor
+    full_monitor = config["monitor_full"]
     img_tpl_space = cv2.imread(config["patterns"]["space"], cv2.IMREAD_GRAYSCALE)
     img_tpl_m_first = cv2.imread(config["patterns"]["first_mini_game"], cv2.IMREAD_GRAYSCALE)
     a_db = load_database_from_dir(config["patterns"]["a_dir"])
@@ -257,7 +260,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--port', action="store", dest="port", default=None, type=str)
     parser.add_argument('--key', action="store", dest="key", default=1234, type=int)
-    parser.add_argument('--config', action="store", dest="config", default="1080p_RU.json", type=str)
+    parser.add_argument('--config', action="store", dest="config", default="1080p_EU.json", type=str)
     args = parser.parse_args()
     if not args.port:
         i = 0
