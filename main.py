@@ -10,6 +10,7 @@ import os
 from multiprocessing import Process, freeze_support
 from CustomKeyboard import *
 import argparse
+import json
 
 global_monitor = {"top": 0, "left": 500, "width": 900, "height": 1080}
 
@@ -168,18 +169,19 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
     for i in all:
         keyboard.emulated_click(i[0])
-        print(i[0])
+        print("[%s]" % i[0])
         time.sleep(0.2)
 
     try:
         time.sleep(4)
         monitor = {"top": 10, "left": 10, "width": 1900, "height": 1060}
         img = np.array(mss.mss().grab(monitor))
+        # cv2.imwrite("test.png", img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         coord = find_templ(img, loot_click, 0.7, 0.71)
         if len(coord) != 0:
             keyboard.emulated_click("r")
-            print("looted!!!")
+            print("[r]")
     except:
         del keyboard
         print("Restart!!!!")
@@ -187,42 +189,38 @@ def analis_awsd_multiple_sampling(imgs_tpl_a, imgs_tpl_w, imgs_tpl_s, imgs_tpl_d
     del keyboard
 
 
-def main(local_comport, local_ACCESS_KEY, local_region):
+def main(local_comport, local_ACCESS_KEY, local_config):
 
     global COMPORT
     COMPORT = local_comport
     global ACCESS_KEY
     ACCESS_KEY = local_ACCESS_KEY
 
-    time.sleep(3)
-    img_tpl_space = cv2.imread("data/patern_space.png", cv2.IMREAD_GRAYSCALE)
-    img_tpl_m_first = cv2.imread("data/first_mini_game.png", cv2.IMREAD_GRAYSCALE)
-    a_db = load_database_from_dir("data/a")
-    w_db = load_database_from_dir("data/w")
-    s_db = load_database_from_dir("data/s")
-    d_db = load_database_from_dir("data/d")
-    if local_region == "RU":
-        img_tpl_2space_bypass = cv2.imread("data/2space_bypass_RU.png", cv2.IMREAD_GRAYSCALE)
-        loot_click = cv2.imread("data/loot_click_RU.png", cv2.IMREAD_GRAYSCALE)
-    elif local_region == "EU":
-        img_tpl_2space_bypass = cv2.imread("data/2space_bypass_EU.png", cv2.IMREAD_GRAYSCALE)
-        loot_click = cv2.imread("data/loot_click_EU.png", cv2.IMREAD_GRAYSCALE)
-    else:
-        print("Error selected region")
-        sys.exit(-1)
+    config = json.loads(open(local_config).read())
+    # global global_monitor
+    # global_monitor = config["monitor_global"]
+    img_tpl_space = cv2.imread(config["patterns"]["space"], cv2.IMREAD_GRAYSCALE)
+    img_tpl_m_first = cv2.imread(config["patterns"]["first_mini_game"], cv2.IMREAD_GRAYSCALE)
+    a_db = load_database_from_dir(config["patterns"]["a_dir"])
+    w_db = load_database_from_dir(config["patterns"]["w_dir"])
+    s_db = load_database_from_dir(config["patterns"]["s_dir"])
+    d_db = load_database_from_dir(config["patterns"]["d_dir"])
+    img_tpl_2space_bypass = cv2.imread(config["patterns"]["2space_bypass"], cv2.IMREAD_GRAYSCALE)
+    loot_click = cv2.imread(config["patterns"]["loot_click"], cv2.IMREAD_GRAYSCALE)
+
     while True:
         time.sleep(0.01)
         img = None
         try:
             img = np.array(mss.mss().grab(global_monitor))
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        except:
-            print("Restart!!!!")
+        except Exception as e:
+            print("1 Restart!!!!")
             sys.exit(0)
 
         coord = find_templ(img, img_tpl_m_first, 0.9, 0.71)
         if len(coord) != 0:
-            print("press space (first mini game)")
+            print("[space] (first mini game)")
             keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
@@ -233,7 +231,7 @@ def main(local_comport, local_ACCESS_KEY, local_region):
 
         coord = find_templ(img, img_tpl_space, 0.7, 0.71)
         if len(coord) != 0:
-            print("Press space")
+            print("[space]")
             keyboard = CustomKeyboard(COMPORT, key=ACCESS_KEY)
             keyboard.emulated_click(" ")
             del keyboard
@@ -246,8 +244,8 @@ def main(local_comport, local_ACCESS_KEY, local_region):
                     print("Started new")
                     time.sleep(5)
                 time.sleep(1)
-            except:
-                print("Restart!!!!")
+            except Exception as e:
+                print("2 Restart!!!!")
                 sys.exit(0)
 
 
@@ -259,7 +257,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--port', action="store", dest="port", default=None, type=str)
     parser.add_argument('--key', action="store", dest="key", default=1234, type=int)
-    parser.add_argument('--region', action="store", dest="region", default="RU", type=str)
+    parser.add_argument('--config', action="store", dest="config", default="1080p_RU.json", type=str)
     args = parser.parse_args()
     if not args.port:
         i = 0
@@ -274,8 +272,10 @@ if __name__ == "__main__":
         except:
             print("Error select port")
             sys.exit(-1)
+
+    time.sleep(3)
     while True:
-        p = Process(target=main, args=(args.port, args.key, args.region))
+        p = Process(target=main, args=(args.port, args.key, args.config))
         print("started new process")
         p.start()
         p.join()
